@@ -1,0 +1,38 @@
+services:
+  pgdatabase:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=ny_taxi_homework
+    volumes:
+      - ".ny_taxi_postgres_data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8080:80"
+
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - URL=https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet
+      - TABLE_NAME=ny_taxi_yellow
+    command:
+      [
+        "--user=root",
+        "--password=root",
+        "--host=pgdatabase",
+        "--port=5432",
+        "--db=ny_taxi_homework",
+        "--table=${TABLE}",
+        "--url=${URL}",
+        "--file_name=output.parquet"
+      ]
